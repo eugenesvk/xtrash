@@ -18,3 +18,5 @@ description continued
 ## Known issues
 
 ## Credits
+
+- [trash101](https://github.com/russelldavis/trash101) Pyhon version
