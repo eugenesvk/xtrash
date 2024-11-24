@@ -4,7 +4,7 @@ use crate::binmod::{xattr_key,xattr_group};
 use bpaf	::{*, long as l, short as s, positional as pos}; // short names to allow starting builders
 use super::bpaf_ext::*;
 
-#[derive(Debug,Clone)] pub struct Opt {undo:bool, paths:Vec<PathBuf>,}
+#[derive(Debug,Clone)] pub struct Opt {pub group:bool, pub undo:bool, pub paths:Vec<PathBuf>,}
 
 pub fn options() -> OptionParser<Opt> {
   let undo	= s('u').l("undo"   ).h("⎌ Undo trashing (alias: r̲estore): path to
