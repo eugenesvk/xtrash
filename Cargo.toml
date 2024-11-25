@@ -23,13 +23,13 @@ cli    	= []
 gui    	= []
 
 [dependencies]
-helperes     	= {git="https://github.com/eugenesvk/helperes.git"     , tag="0.1.0"}
+helperes     	= {git="https://github.com/eugenesvk/helperes.git"     , tag="0.1.2"}
 helperes_proc	= {git="https://github.com/eugenesvk/helperes-proc.git", tag="0.1.0"}
 log          	= "0.4"
 stderrlog    	= "0.5"
 anyhow       	= "1.0"
 faccess      	= "0.2"
-time = "0.3.36"
+time         	= {version="0.3.36",features=["local-offset"]}
 bpaf = "0.9.15"
 thiserror = "2.0.3"
 xattr = {version="1.3.1",features=[]} #prevent compilation on unsupported platforms
