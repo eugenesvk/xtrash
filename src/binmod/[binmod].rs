@@ -91,7 +91,7 @@ pub fn trash_all<P:AsRef<Path>>(cc_paths:&[P], group:bool) -> result::Result<(),
         Ok (()) => {if ! xattr::set(trash_par.clone(),xattr_batch,&[1]).is_ok() {return Err(ErTrash::NoXattr(trash_par))}
           trash_parent = trash_par;
           break},
-        Err(e ) => {if i==imax {return Err(ErTrash::IoTrashPar{i:5,path:trash_par,e:e})}},
+        Err(e ) => {if i==imax {return Err(ErTrash::IoTrashPar{i:i,path:trash_par,e:e})}},
       }
     }
   }
