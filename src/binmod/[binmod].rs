@@ -61,13 +61,12 @@ pub fn main_cli() -> Result<()> {
 }
 
 use time::OffsetDateTime;
-pub fn group_timed() -> String {
-  let now = match OffsetDateTime::now_local() {
-    Ok (t) => t,
-    Err(_) => OffsetDateTime::now_utc(),
-  };
-  format!("{}_{:#02}꞉{:#02}꞉{:#02}_{:#03}",xattr_batch,now.hour(),now.minute(),now.second(),now.millisecond())
+pub fn time_s() -> String {
+  let now = match OffsetDateTime::now_local() {Ok (t) => t,
+    Err(_) =>     OffsetDateTime::now_utc  (),};
+  format!("{:#02}꞉{:#02}꞉{:#02}_{:#03}",now.hour(),now.minute(),now.second(),now.millisecond())
 }
+pub fn group_timed() -> String {format!("{}_{}",xattr_batch,time_s())}
 use std::fs;
 
 pub fn trash_all<P:AsRef<Path>>(cc_paths:&[P], group:bool) -> result::Result<(),ErTrash> {
