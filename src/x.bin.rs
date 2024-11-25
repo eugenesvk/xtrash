@@ -8,7 +8,7 @@ pub use ::h::alias 	::*;
 pub use ::h::helper	::*;
 
 _mod!(binmod); //→ #[path="binmod/[binmod].rs"] pub mod binmod;
-use crate::binmod::print42;
+use crate::binmod::{print42,main_cli};
 
 use std::error::Error;
 use std::result;
@@ -24,6 +24,10 @@ pub fn setup_os_log() -> Result<()> {
 }
 type Result<T> = result::Result<T, Box<dyn Error>>;
 fn main() -> Result<()> {
-  print42()?;
+  #[cfg(feature="gui")] setup_os_log()?;
+  #[cfg(feature="cli")] stderrlog::new().modules([module_path!()]).verbosity(4).init().unwrap();
+
+  main_cli()?;
+
   Ok(())
 }
