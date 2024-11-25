@@ -13,6 +13,8 @@ use crate::binmod::{print42,main_cli};
 use std::error::Error;
 use std::result;
 
+use std::path::{Path,PathBuf};
+
 use tracing_subscriber::prelude::*; // added error check
 use tracing_oslog::OsLogger;
 const log_subsystem:&'static str = "xtrash";
