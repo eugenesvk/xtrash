@@ -22,6 +22,15 @@ pub fn setup_os_log() -> Result<()> {
   tracing::subscriber::set_global_default(collector).expect("failed to set global subscriber"); //⚠️ libs should avoid this to not cause conflicts when executables that depend on the library try to set the default later
   Ok(())
 }
+
+use once_cell::sync::Lazy;
+pub static IS_TERM: Lazy<bool> = Lazy::new(|| io::stdout().is_terminal());
+// pub static IS_CONSOLE: Lazy<bool> =
+    // Lazy::new(|| io::stdin().is_terminal());
+#[cfg(feature="cli")] use log    ::{*,trace as l4, debug as l3, info as l2, warn as l1, error as l0};
+#[cfg(feature="gui")] use tracing::{*,trace as l4, debug as l3, info as l2, warn as l1, error as l0};
+
+use std::io::IsTerminal;
 type Result<T> = result::Result<T, Box<dyn Error>>;
 fn main() -> Result<()> {
   #[cfg(feature="gui")] setup_os_log()?;
