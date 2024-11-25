@@ -87,8 +87,8 @@ pub fn trash_all<P:AsRef<Path>>(cc_paths:&[P], group:bool) -> result::Result<(),
     for i in 1..=imax {
       let mut dir_g_name = group_timed(); if i>5 {dir_g_name.push_str(&i.to_string())}
       let mut trash_par = trash_path.clone(); trash_par.push(dir_g_name); // /Users/x/.Trash/xtrash_g_15꞉01꞉17_123
-      match fs::create_dir(trash_par.clone()) {//debug!("✓ trash_par = {:?}",trash_par)?;
-        Ok (()) => {if ! xattr::set(trash_par.clone(),xattr_batch,&[1]).is_ok() {return Err(ErTrash::NoXattr(trash_par))}
+      match fs::create_dir(&trash_par) {//debug!("✓ trash_par = {:?}",trash_par)?;
+        Ok (()) => {if ! xattr::set(&trash_par,xattr_batch,&[1]).is_ok() {return Err(ErTrash::NoXattr(trash_par))}
           trash_parent = trash_par;
           break},
         Err(e ) => {if i==imax {return Err(ErTrash::IoTrashPar{i:i,path:trash_par,e:e})}},
