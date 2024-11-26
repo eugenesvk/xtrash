@@ -204,8 +204,8 @@ dependencies = [
 
 [[package]]
 name = "helperes"
-version = "0.1.2"
-source = "git+https://github.com/eugenesvk/helperes.git?tag=0.1.2#4cb6157a603b5a6355ce1f229d41cfa49467d983"
+version = "0.1.3"
+source = "git+https://github.com/eugenesvk/helperes.git#1ea888fa95f27536e040af33dafd1736243f5b9c"
 dependencies = [
  "anyhow",
  "faccess",
@@ -931,7 +931,7 @@ dependencies = [
  "anyhow",
  "bpaf",
  "faccess",
- "helperes 0.1.2",
+ "helperes 0.1.3",
  "helperes_proc",
  "log",
  "once_cell",
