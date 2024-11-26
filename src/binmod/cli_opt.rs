@@ -21,4 +21,8 @@ pub fn options() -> OptionParser<Opt> {
     .descr("Move dir/file(s) to 🗑 ‘~/.Trash’ or restore previously trashed ones (with this tool)")
     // .header("")
     .footer(&*format!("(items are tracked via extended attributes keyed with ‘{}’, batch dirs — with ‘{}’)",xattr_key,xattr_batch))
+    .with_usage(|doc| {let mut u = Doc::default();/*u.emphasis("Use");u.text(": ");*/
+      u.literal(env!("CARGO_BIN_NAME"));u.text(" ");u.doc(&doc);
+      u
+    })
 }
