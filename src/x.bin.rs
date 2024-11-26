@@ -34,11 +34,16 @@ pub static IS_TERM: Lazy<bool> = Lazy::new(|| io::stdout().is_terminal());
 
 use std::io::IsTerminal;
 type Result<T> = result::Result<T, Box<dyn Error>>;
-fn main() -> Result<()> {
+fn main() -> Result<()> {try_main()}
+
+fn try_main() -> Result<()> {
   #[cfg(feature="gui")] setup_os_log()?;
   #[cfg(feature="cli")] stderrlog::new().modules([module_path!()]).verbosity(4).init().unwrap();
 
-  main_cli()?;
+  match main_cli() {
+    Ok (())	=> {},
+    Err(e )	=> error!("{}",e),
+  }
 
   Ok(())
 }
