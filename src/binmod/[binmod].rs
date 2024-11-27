@@ -123,9 +123,35 @@ pub fn trash_all<P:AsRef<Path>>(cc_paths:&[P], group:bool) -> result::Result<(),
 
     // let mut p = PathBuf::new();p.push(home_dir   .clone());p.push(TRASH    ); let trashed_par   = p;
 
-    let mut p = PathBuf::new();p.push(home_dir   .clone());p.push(TRASH    ); let trashed_par   = p;
-    let mut p = PathBuf::new();p.push(trashed_par);p.push(file_name); let trashed_path  = p;
-    if _d(1){debug!("trashed_path = {:?} resolved_path={:?}",trashed_path,resolved_path);}
+    // 2. Find a suitable target path in Trash (append time if dupe)
+    let mut trashed_path = trash_parent.clone(); trashed_path.push(base_name); // /Users/x/.Trash/xtrash_g_15꞉01꞉17_123/src_path (or without xtrash...)
+    let mut trashed_file:Option<File> = None;
+    for i in 1..=imax {
+      if is_real_dir { // check if available by creating a dir (will be replaced later with our source)
+        match fs::create_dir(&trashed_path) {//debug!("✓ dir trashed_path = {:?}",trashed_path)?;
+          Ok (()) =>
+            break,
+          Err(e ) => {if i==imax {if safe_create {return Err(ErTrash::IoTrashDest{i:i,src:path.to_path_buf(),dst:trashed_path,e:e})
+              } else {error!("I/O error when preparing to move ‘{:?}’ to ‘{:?}’ in 🗑 (tried {i} variants), failed to create a unique dir: ‘{e}’",path,trashed_path); skipped_dupe.push(path);}
+            } else {
+              let mut time_pad = time_s(' '); if i>5 {time_pad.push('_');time_pad.push_str(&i.to_string())}
+              trashed_path.pop(); trashed_path.push(concat_2oss(base_name,time_pad));}
+            continue},
+        }
+      } else { // ↓ atomic, avoids TOCTOU race condition
+        match fs::File::create_new(&trashed_path) { //debug!("✓ file trashed_path = {:?}",trashed_path)?;
+          Ok (f ) => {trashed_file = Some(f);
+            break},
+          Err(e ) => {if i==imax {if safe_create {return Err(ErTrash::IoTrashDest{i:i,src:path.to_path_buf(),dst:trashed_path,e:e})
+              } else {error!("I/O error when preparing to move ‘{:?}’ to ‘{:?}’ in 🗑 (tried {i} variants): failed to create a unique file: ‘{e}’",path,trashed_path); skipped_dupe.push(path);}
+            } else {
+              let mut time_pad = time_s(' '); if i>5 {time_pad.push('_');time_pad.push_str(&i.to_string())}
+              let file_name_padded = concat_oss(&[stem,time_pad.as_ref(),ext]).unwrap_or_else(|e| concat_2oss(base_name,time_pad));
+              trashed_path.pop(); trashed_path.push(file_name_padded);}
+            continue},
+        }
+      }
+    }
 
     // 3. Move to the found target
     let dir_file = if is_real_dir{"dir"}else{"file"}; //🗀📁🗁 🗋🗎
