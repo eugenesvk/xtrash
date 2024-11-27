@@ -128,8 +128,17 @@ pub fn trash_all<P:AsRef<Path>>(cc_paths:&[P], group:bool) -> result::Result<(),
     if _d(1){debug!("trashed_path = {:?} resolved_path={:?}",trashed_path,resolved_path);}
 
 
-  //   // let trashed_file = None;
-  //   warn!("deleting path from cb_clipboard_trash {:?}",path);
+  // Cleanup
+  if group { match fs::remove_dir(&trash_parent) {
+    Ok (()) => {debug!("Cleaned up empty group subdir {:?}", &trash_parent)}, // if skipped all files
+    Err(e ) => { match e.kind() {
+      ErrorKind::NotFound => {error!("")}, //
+      ErrorKind::PermissionDenied => {error!("")}, // TODO: uncomment when stabilized
+      // ErrorKind::DirectoryNotEmpty => {debug!("")}, // ok to ignore: The directory isn't empty
+      // ErrorKind::NotADirectory => {error!("")}, // not ok to ignore
+      // _ => error!("Failed to cleanup after ourselves — removing an empty group dir {:?}: {:?}",&trash_parent,e), //
+      _ => {}, //combines 2 unstable errorkinds
+      }
       if skip_c { // append skipe count if we haven't removed the empty dir
         let l_name 	= skipped_name .len();
         let l_par  	= skipped_par  .len();
