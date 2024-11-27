@@ -130,6 +130,23 @@ pub fn trash_all<P:AsRef<Path>>(cc_paths:&[P], group:bool) -> result::Result<(),
 
   //   // let trashed_file = None;
   //   warn!("deleting path from cb_clipboard_trash {:?}",path);
+      if skip_c { // append skipe count if we haven't removed the empty dir
+        let l_name 	= skipped_name .len();
+        let l_par  	= skipped_par  .len();
+        let l_trash	= skipped_trash.len();
+        let l_dupe 	= skipped_dupe .len();
+        let skip_count = l_name + l_par + l_trash + l_dupe;
+        if skip_count > 0 {let mut lbl = String::new();
+          if l_name 	> 0 {lbl.push_str(&format!(" name{}" ,l_name ))};
+          if l_par  	> 0 {lbl.push_str(&format!(" par{}"  ,l_par  ))};
+          if l_trash	> 0 {lbl.push_str(&format!(" trash{}",l_trash))};
+          if l_dupe 	> 0 {lbl.push_str(&format!(" dupe{}" ,l_dupe ))};
+          debug!("skipped {} from {} in cat: {}",skip_count,total_count,lbl);
+          let trash_parent_count = concat_2oss(&trash_parent,lbl);
+          if let Err(e) = fs::rename(&trash_parent,&trash_parent_count) {error!("Failed to append skipped count to our group subdir: {:?}",e)};
+        }
+      }
+    }}
   }
 
   // Return all skipped paths by category for future logging
