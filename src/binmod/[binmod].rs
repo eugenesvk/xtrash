@@ -4,10 +4,14 @@ use ::h            	::*; // gets macros :: prefix needed due to proc macro expan
 pub use hproc      	::*; // gets proc macros
 pub use ::h::alias 	::*;
 pub use ::h::helper	::*;
+pub use ::h::stros 	::*;
 use crate::*;
 
 use std::error::Error;
+use std::io::ErrorKind;
 use std::result;
+use std::fs::File;
+use std::fmt;
 
 pub mod bpaf_ext;
 use bpaf_ext::*;
