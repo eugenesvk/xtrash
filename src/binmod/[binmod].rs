@@ -55,12 +55,6 @@ use std::io::IsTerminal;
 pub fn main_cli() -> Result<()> {
   let opt = options().run();
   // println!("{:#?}", opt);
-
-  let pth:PathBuf = PathBuf::new();
-  let pth2:&Path = Path::new("./foo/bar.txt");
-  let cc_paths:Vec<&Path> = vec![&pth,pth2];
-  match trash_all(&cc_paths, opt.group) {
-    Ok (()) => {},
   let api = match opt.api {
     Some(api) 	=> match api.clone().to_ascii_lowercase().as_str() {
       "direct"	=> DeleteMethod::Direct, "d"	=> DeleteMethod::Direct,
@@ -69,9 +63,10 @@ pub fn main_cli() -> Result<()> {
       _       	=> {error!("Expected either of d|direct|f|finder|os, got {}",api); return Err(Box::new(ErTrash::BadArg))},},
     None      	=> DeleteMethod::Direct,
   };
+  match trash_all(&opt.paths, opt.group, opt.skip_c, api) {
+    Ok (x) => p!("removed ok, skipped={:?}",x)?,
     Err(e) => pe!("{e}")?,
   }
-
   Ok(())
 }
 
