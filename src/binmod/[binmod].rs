@@ -75,11 +75,15 @@ pub fn time_s() -> String {
 pub fn group_timed() -> String {format!("{}_{}",xattr_batch,time_s())}
 use std::fs;
 
-pub fn trash_all<P:AsRef<Path>>(cc_paths:&[P], group:bool) -> result::Result<(),ErTrash> {
-  // let mut skipped:HashMap<String,Vec<PathBuf>> = HashMap::new(); //todo push lists later, group by error type
-  let mut skipped_nm   :Vec<PathBuf> = vec![]; // skipped due to unresolved file name
-  let mut skipped_par  :Vec<PathBuf> = vec![]; // skipped due to unresolved parent or canonicalization error
-  let mut skipped_trash:Vec<PathBuf> = vec![]; // skipped due to already being in trash
+pub fn trash_all<P:AsRef<Path>>(cc_paths:&[P], group:bool, skip_c:bool, api:DeleteMethod) -> result::Result<HashMap<String,Vec<&Path>>,ErTrash> {
+  let safe_undo = false; //todo: add user arg: aborts and returns error if cant't set Xattr even if move was successful, otherwise we can't undo without xattr
+  let safe_create = false; //todo: add user arg: aborts and returns error if cant't create a unique target at trash
+
+  let mut skipped:HashMap<String,Vec<&Path>> = HashMap::new(); //todo push lists later, group by error type
+  let mut skipped_name :Vec<&Path> = vec![]; // skipped due to unresolved file name
+  let mut skipped_par  :Vec<&Path> = vec![]; // skipped due to unresolved parent or canonicalization error
+  let mut skipped_trash:Vec<&Path> = vec![]; // skipped due to already being in trash
+  let mut skipped_dupe :Vec<&Path> = vec![]; // skipped due to dupe and inability to create a unique file
 
   #[allow(deprecated)] let home_dir = match env::home_dir() {
     Some(path)	=> path,  //todo check if empty ""
