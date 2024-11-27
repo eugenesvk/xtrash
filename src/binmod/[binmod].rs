@@ -67,7 +67,10 @@ pub fn main_cli() -> Result<()> {
       _       	=> {error!("Expected either of d|direct|f|finder|os, got {}",api); return Err(Box::new(ErTrash::BadArg))},},
     None      	=> DeleteMethod::Direct,
   };
-  match trash_all(&opt.paths, opt.group, opt.skip_c, opt.undo==2, api) {
+  let group    	= opt.group >0;
+  let skip_c   	= opt.group==2;
+  let must_undo	= opt.undo ==2;
+  match trash_all(&opt.paths, group,skip_c, must_undo, opt.err_dupe, api) {
     Ok (x) => p!("removed ok, skipped={:?}",x)?,
     Err(e) => pe!("{e}")?,
   }
@@ -83,10 +86,10 @@ pub fn time_s(prefix:char) -> String {
 pub fn group_timed() -> String {format!("{}{}",xattr_batch,time_s('_'))}
 use std::fs;
 
-pub fn trash_all<P:AsRef<Path>>(cc_paths:&[P], group:bool, skip_c:bool, must_undo:bool, api:DeleteMethod) -> result::Result<HashMap<String,Vec<&Path>>,ErTrash> {
-  let safe_create = false; //todo: add user arg: aborts and returns error if cant't create a unique target at trash
+pub fn trash_all<P:AsRef<Path>>(cc_paths:&[P], group:bool, skip_c:bool, must_undo:bool, err_dupe:bool, api:DeleteMethod) -> result::Result<HashMap<String,Vec<&Path>>,ErTrash> {
 
   let mut skipped:HashMap<String,Vec<&Path>> = HashMap::new(); //todo push lists later, group by error type
+  if cc_paths.len() == 0 {return Ok(skipped)}
   let mut skipped_name :Vec<&Path> = vec![]; // skipped due to unresolved file name
   let mut skipped_par  :Vec<&Path> = vec![]; // skipped due to unresolved parent or canonicalization error
   let mut skipped_trash:Vec<&Path> = vec![]; // skipped due to already being in trash
@@ -153,7 +156,7 @@ pub fn trash_all<P:AsRef<Path>>(cc_paths:&[P], group:bool, skip_c:bool, must_und
         match fs::create_dir(&trashed_path) {//debug!("✓ dir trashed_path = {:?}",trashed_path)?;
           Ok (()) =>
             break,
-          Err(e ) => {if i==imax {if safe_create {return Err(ErTrash::IoTrashDest{i:i,src:path.to_path_buf(),dst:trashed_path,e:e})
+          Err(e ) => {if i==imax {if err_dupe {return Err(ErTrash::IoTrashDest{i:i,src:path.to_path_buf(),dst:trashed_path,e:e})
               } else {error!("I/O error when preparing to move ‘{:?}’ to ‘{:?}’ in 🗑 (tried {i} variants), failed to create a unique dir: ‘{e}’",path,trashed_path); skipped_dupe.push(path);}
             } else {
               let mut time_pad = time_s(' '); if i>5 {time_pad.push('_');time_pad.push_str(&i.to_string())}
@@ -164,7 +167,7 @@ pub fn trash_all<P:AsRef<Path>>(cc_paths:&[P], group:bool, skip_c:bool, must_und
         match fs::File::create_new(&trashed_path) { //debug!("✓ file trashed_path = {:?}",trashed_path)?;
           Ok (f ) => {trashed_file = Some(f);
             break},
-          Err(e ) => {if i==imax {if safe_create {return Err(ErTrash::IoTrashDest{i:i,src:path.to_path_buf(),dst:trashed_path,e:e})
+          Err(e ) => {if i==imax {if err_dupe {return Err(ErTrash::IoTrashDest{i:i,src:path.to_path_buf(),dst:trashed_path,e:e})
               } else {error!("I/O error when preparing to move ‘{:?}’ to ‘{:?}’ in 🗑 (tried {i} variants): failed to create a unique file: ‘{e}’",path,trashed_path); skipped_dupe.push(path);}
             } else {
               let mut time_pad = time_s(' '); if i>5 {time_pad.push('_');time_pad.push_str(&i.to_string())}
