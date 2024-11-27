@@ -67,7 +67,7 @@ pub fn main_cli() -> Result<()> {
       _       	=> {error!("Expected either of d|direct|f|finder|os, got {}",api); return Err(Box::new(ErTrash::BadArg))},},
     None      	=> DeleteMethod::Direct,
   };
-  match trash_all(&opt.paths, opt.group, opt.skip_c, api) {
+  match trash_all(&opt.paths, opt.group, opt.skip_c, opt.undo==2, api) {
     Ok (x) => p!("removed ok, skipped={:?}",x)?,
     Err(e) => pe!("{e}")?,
   }
@@ -83,8 +83,7 @@ pub fn time_s(prefix:char) -> String {
 pub fn group_timed() -> String {format!("{}{}",xattr_batch,time_s('_'))}
 use std::fs;
 
-pub fn trash_all<P:AsRef<Path>>(cc_paths:&[P], group:bool, skip_c:bool, api:DeleteMethod) -> result::Result<HashMap<String,Vec<&Path>>,ErTrash> {
-  let safe_undo = false; //todo: add user arg: aborts and returns error if cant't set Xattr even if move was successful, otherwise we can't undo without xattr
+pub fn trash_all<P:AsRef<Path>>(cc_paths:&[P], group:bool, skip_c:bool, must_undo:bool, api:DeleteMethod) -> result::Result<HashMap<String,Vec<&Path>>,ErTrash> {
   let safe_create = false; //todo: add user arg: aborts and returns error if cant't create a unique target at trash
 
   let mut skipped:HashMap<String,Vec<&Path>> = HashMap::new(); //todo push lists later, group by error type
