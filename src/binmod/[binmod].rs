@@ -91,10 +91,14 @@ pub fn trash_all<P:AsRef<Path>>(cc_paths:&[P], group:bool) -> result::Result<(),
   let mut trash_parent = trash_path.clone(); // store successfully created group dir in trash
   if group { let imax = 50;
     for i in 1..=imax {
-      let mut dir_g_name = group_timed(); if i>5 {dir_g_name.push_str(&i.to_string())}
+      let mut dir_g_name = group_timed(); if i>5 {dir_g_name.push('_');dir_g_name.push_str(&i.to_string())}
       let mut trash_par = trash_path.clone(); trash_par.push(dir_g_name); // /Users/x/.Trash/xtrash_g_15꞉01꞉17_123
       match fs::create_dir(&trash_par) {//debug!("✓ trash_par = {:?}",trash_par)?;
-        Ok (()) => {if ! xattr::set(&trash_par,xattr_batch,&[1]).is_ok() {return Err(ErTrash::NoXattr(trash_par))}
+        Ok (()) => {
+          match xattr::set(&trash_par,xattr_batch,&[1]) {
+            Ok (()) => {debug!("Created group subdir and set its extended attributes: {:?}",trash_par)},
+            Err(e ) => {if safe_undo {return Err(ErTrash::NoXattr(trash_par))} else {error!("No Undo: created group subdir ‘{:?}’, but failed to set its extended attributes due to: {:?}",trash_par,e)}},
+          }
           trash_parent = trash_par;
           break},
         Err(e ) => {if i==imax {return Err(ErTrash::IoTrashPar{i:i,path:trash_par,e:e})}},
