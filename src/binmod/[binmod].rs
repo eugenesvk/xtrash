@@ -39,8 +39,14 @@ use thiserror::Error;
 #[derive(Debug,Error)] pub enum ErTrash {
   #[error("I/O error creating a group subdir ‘{path}’ (tried {i} variants) in 🗑 : {e}")]
   IoTrashPar {i:u8,path:PathBuf, e:io::Error,},
-  #[error("Failed to set extended attributes for ‘{0}’")]	NoXattr(PathBuf),
-  #[error("Found no $HOME environment variable")]        	NoHome,
+  #[error("I/O error when preparing to move ‘{src}’ to ‘{dst}’ in 🗑 (tried {i} variants) : {e}")]
+  IoTrashDest {i:u8,src:PathBuf,dst:PathBuf, e:io::Error,},
+  #[error("No Undo: Failed to set extended attributes for ‘{0}’")]
+  NoXattr(PathBuf),
+  #[error("Found no $HOME environment variable")]
+  NoHome,
+  #[error("Unrecognized cli arguments")]
+  BadArg,
 }
 
 use std::io::IsTerminal;
