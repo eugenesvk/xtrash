@@ -127,6 +127,30 @@ pub fn trash_all<P:AsRef<Path>>(cc_paths:&[P], group:bool) -> result::Result<(),
     let mut p = PathBuf::new();p.push(trashed_par);p.push(file_name); let trashed_path  = p;
     if _d(1){debug!("trashed_path = {:?} resolved_path={:?}",trashed_path,resolved_path);}
 
+    // 3. Move to the found target
+    let dir_file = if is_real_dir{"dir"}else{"file"}; //🗀📁🗁 🗋🗎
+    match fs::rename(&path,&trashed_path) {
+      Ok (())     => {debug!("✓ to move {} to trash!: {:?} to {:?}",dir_file, &path, &trashed_path);
+        match xattr::set(&trashed_path,xattr_key,path.as_os_str().as_encoded_bytes()) {
+          Ok (()) => {debug!("✓ set xattr to moved {} at trash!: {:?} to {:?}",dir_file, &path, &trashed_path)},
+          Err(e ) => {if safe_undo {return Err(ErTrash::NoXattr(trashed_path))
+            } else {  error!("No Undo: created {} ‘{:?}’, but failed to set its extended attributes due to: {:?}",dir_file,trashed_path,e)}},
+        }
+      },
+      Err(e ) => {match e.kind() {
+        ErrorKind::NotFound         => {warn!("Failed to move {} to trash: {:?}",dir_file,e);}
+        ErrorKind::PermissionDenied => {warn!("Failed to move {} to trash: {:?}",dir_file,e);} //TODO: request sudo
+        // ErrorKind::CrossesDevices => {warn!("failed to move {} to trash!: {:?}",dir_file,e);} //unstable TODO: use another method
+        _ => {error!("Failed to move {} to trash: {:?}",dir_file,e);}
+        }
+        if ! is_real_dir { //
+          if let Some(f) = trashed_file {
+            if let Err(e) = fs::remove_file(&trashed_path) {error!("Failed to cleanup after ourselves — removing an empty file {:?}: {:?}",&trashed_path,e)}
+          }
+        }
+      },
+    }
+  } // end of loop over paths
 
   // Cleanup
   if group { match fs::remove_dir(&trash_parent) {
