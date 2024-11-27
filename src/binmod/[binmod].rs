@@ -46,8 +46,8 @@ use thiserror::Error;
   IoTrashPar {i:u8,path:PathBuf, e:io::Error,},
   #[error("I/O error when preparing to move ‘{src}’ to ‘{dst}’ in 🗑 (tried {i} variants) : {e}")]
   IoTrashDest {i:u8,src:PathBuf,dst:PathBuf, e:io::Error,},
-  #[error("No Undo: Failed to set extended attributes for ‘{0}’")]
-  NoXattr(PathBuf),
+  #[error("No Undo: created {dir_file}, but failed to set its extended attributes:\n┏  {src}\n┗🠊 {dst}\nErr: {e}")] //🠂🠆🠊⮩
+  NoXattr {src:PathBuf,dst:PathBuf, dir_file:String, e:io::Error},
   #[error("Found no $HOME environment variable")]
   NoHome,
   #[error("Unrecognized cli arguments")]
