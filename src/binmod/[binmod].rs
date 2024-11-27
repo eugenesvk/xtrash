@@ -17,6 +17,7 @@ use cli_opt::*;
 type Result<T> = result::Result<T, Box<dyn Error>>;
 pub fn print42() -> Result<()> {p!("{}",42)?; Ok(())}
 
+use trash::macos::DeleteMethod;
 use std::env;
 use std::path::{Path,PathBuf};
 use std::ffi::OsStr;
@@ -60,6 +61,14 @@ pub fn main_cli() -> Result<()> {
   let cc_paths:Vec<&Path> = vec![&pth,pth2];
   match trash_all(&cc_paths, opt.group) {
     Ok (()) => {},
+  let api = match opt.api {
+    Some(api) 	=> match api.clone().to_ascii_lowercase().as_str() {
+      "direct"	=> DeleteMethod::Direct, "d"	=> DeleteMethod::Direct,
+      "finder"	=> DeleteMethod::Finder, "f"	=> DeleteMethod::Finder,
+      "os"    	=> DeleteMethod::NsFileManager,
+      _       	=> {error!("Expected either of d|direct|f|finder|os, got {}",api); return Err(Box::new(ErTrash::BadArg))},},
+    None      	=> DeleteMethod::Direct,
+  };
     Err(e) => pe!("{e}")?,
   }
 
