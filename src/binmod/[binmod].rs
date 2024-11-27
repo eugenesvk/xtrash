@@ -108,7 +108,8 @@ pub fn trash_all<P:AsRef<Path>>(cc_paths:&[P], group:bool, skip_c:bool, must_und
         Ok (()) => {
           match xattr::set(&trash_par,xattr_batch,&[1]) {
             Ok (()) => {debug!("Created group subdir and set its extended attributes: {:?}",trash_par)},
-            Err(e ) => {if safe_undo {return Err(ErTrash::NoXattr(trash_par))} else {error!("No Undo: created group subdir ‘{:?}’, but failed to set its extended attributes due to: {:?}",trash_par,e)}},
+            Err(e ) => {if must_undo {return Err(ErTrash::NoXattr{src:"".into(),dst:trash_par,dir_file:"group subdir".to_string(),e:e})
+              } else {error!("No Undo: created group subdir, but failed to set its extended attributes:\n   {:?}\nErr: {:?}",trash_par,e)}},
           }
           trash_parent = trash_par;
           break},
@@ -138,9 +139,11 @@ pub fn trash_all<P:AsRef<Path>>(cc_paths:&[P], group:bool, skip_c:bool, must_und
       None       	=> {skipped_par.push(path); continue}};
     let is_real_dir =  path.is_dir    ()
       &&             ! path.is_symlink();
+    let dir_file = if is_real_dir{"dir"}else{"file"}; //🗀📁🗁 🗋🗎
 
+    let mut p = PathBuf::new();p.push(parent);p.push(base_name); let resolved_path = p; // Resolve sym🔗 in dirs, but not the file itself
+    if resolved_path.starts_with(&trash_path) {skipped_trash.push(path); continue} // already in trash
 
-    // let mut p = PathBuf::new();p.push(home_dir   .clone());p.push(TRASH    ); let trashed_par   = p;
 
     // 2. Find a suitable target path in Trash (append time if dupe)
     let mut trashed_path = trash_parent.clone(); trashed_path.push(base_name); // /Users/x/.Trash/xtrash_g_15꞉01꞉17_123/src_path (or without xtrash...)
@@ -173,13 +176,12 @@ pub fn trash_all<P:AsRef<Path>>(cc_paths:&[P], group:bool, skip_c:bool, must_und
     }
 
     // 3. Move to the found target
-    let dir_file = if is_real_dir{"dir"}else{"file"}; //🗀📁🗁 🗋🗎
     match fs::rename(&path,&trashed_path) {
       Ok (())     => {debug!("✓ to move {} to trash!: {:?} to {:?}",dir_file, &path, &trashed_path);
         match xattr::set(&trashed_path,xattr_key,path.as_os_str().as_encoded_bytes()) {
           Ok (()) => {debug!("✓ set xattr to moved {} at trash!: {:?} to {:?}",dir_file, &path, &trashed_path)},
-          Err(e ) => {if safe_undo {return Err(ErTrash::NoXattr(trashed_path))
-            } else {  error!("No Undo: created {} ‘{:?}’, but failed to set its extended attributes due to: {:?}",dir_file,trashed_path,e)}},
+          Err(e ) => {if must_undo {return Err(ErTrash::NoXattr{src:path.to_path_buf(),dst:trashed_path,dir_file:dir_file.to_string(),e:e})
+            } else {  error!("No Undo: created {dir_file}, but failed to set its extended attributes\n┏  {:?}\n┗🠊 {:?}\nErr: {e}",path,trashed_path)}},
         }
       },
       Err(e ) => {match e.kind() {
