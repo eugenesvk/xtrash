@@ -25,6 +25,10 @@ pub fn options() -> OptionParser<Opt> {
     d}).	  s('b').l("batch").switch()
     .many().map(|xs| xs.len()).guard(|&x| x <= 2, "> 2 group flag repetitions");
 
+  // use std::sync::Arc;
+  // let hh =format!("{}|{}|{}","d".blue().bold(),"f".blue().bold(),"os".blue().bold());
+  // let hh = Box::leak(Box::new(hh)); //TODO: leak to make static, couldn't make it work with ArcStr crate though it's supposed to work as &str
+
   let err_dupe	= s('e').l("edupe" ).h("Abort on unresolved dupes if can't find a unique name in 🗑 even after many iterations instead of skipping").switch();
   let api     	= s('v').l("via"   ).h({let mut d = Doc::default();d.text("(TBD) Trashing method to use (case insensitive):\n ");
     d.lit("d" );d.text(" | ");d.lit("Direct");d.text(": move items directly (Undo only via this tool)\n ");

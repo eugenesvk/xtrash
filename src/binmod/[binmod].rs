@@ -122,7 +122,7 @@ pub fn trash_all<P:AsRef<Path>>(cc_paths:&[P], group:bool, skip_c:bool, must_und
   }
   let total_count = cc_paths.len();
 
-  let imax = 100;
+  let imax = 100; //try this many times to find a unique target path (appending current time on dupes) before giving up
   for path in cc_paths {
     // todo: bail if path doesn;t exit, add to skipped
     let path     	= path.as_ref(); // /Users/x/Documents/1.txt
@@ -224,7 +224,7 @@ pub fn trash_all<P:AsRef<Path>>(cc_paths:&[P], group:bool, skip_c:bool, must_und
           if l_par  	> 0 {lbl.push_str(&format!(" par{}"  ,l_par  ))};
           if l_trash	> 0 {lbl.push_str(&format!(" trash{}",l_trash))};
           if l_dupe 	> 0 {lbl.push_str(&format!(" dupe{}" ,l_dupe ))};
-          debug!("skipped {} from {} in cat: {}",skip_count,total_count,lbl);
+          trace!("skipped {} from {} in cat: {}",skip_count,total_count,lbl);
           let trash_parent_count = concat_2oss(&trash_parent,lbl);
           if let Err(e) = fs::rename(&trash_parent,&trash_parent_count) {error!("Failed to append skipped count to our group subdir: {:?}",e)};
         }
