@@ -101,24 +101,28 @@ pub fn trash_all<P:AsRef<Path>>(cc_paths:&[P], group:bool) -> result::Result<(),
       }
     }
   }
+  let total_count = cc_paths.len();
 
-  let mut path_counts:HashMap<PathBuf,u8> = HashMap::new();
-  let batch_fd = 1;
+  let imax = 100;
   for path in cc_paths {
-    let path = path.as_ref(); // /Users/x/Documents/1.txt
-    let file_name = match path.file_name() { //1.txt
+    // todo: bail if path doesn;t exit, add to skipped
+    let path     	= path.as_ref(); // /Users/x/Documents/1.txt
+    let base_name	= match path.file_name() { //1.txt
       Some(p)    	=> p,
-      None       	=> {skipped_nm.push(path.into()); continue}};
-    let parent   	= match path.parent      () { // /Users/x/Documents
+      None       	=> {skipped_name.push(path); continue}};
+    let stem     	= path.file_stem().unwrap_or_else(|| OsStr::new("")); //1
+    let ext      	= match path.extension() { // .txt (.ext in rust returns without a dot)
+      Some(ex)   	=> &concat_2oss(".",ex),
+      None       	=> OsStr::new(""),};
+    let parent   	= match path.parent   () { // /Users/x/Documents
       Some(p)    	=> {
-        let can  	= match p   .canonicalize() {
+        let canon	= match p.canonicalize() {
           Ok (pc)	=> pc,
-          Err(e )	=> {skipped_par.push(path.into()); continue}};
-        can },
-      None	=> {skipped_par.push(path.into()); continue}};
-
-    let mut p = PathBuf::new();p.push(parent);             p.push(file_name); let resolved_path = p; // Resolve sym🔗 in dirs, but not the file itself
-    if resolved_path.starts_with(&trash_path) {skipped_trash.push(path.into()); continue} // already in trash
+          Err(e )	=> {skipped_par.push(path); continue}};
+        canon    	},
+      None       	=> {skipped_par.push(path); continue}};
+    let is_real_dir =  path.is_dir    ()
+      &&             ! path.is_symlink();
 
 
     // let mut p = PathBuf::new();p.push(home_dir   .clone());p.push(TRASH    ); let trashed_par   = p;
