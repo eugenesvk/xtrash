@@ -4,7 +4,7 @@ use crate::binmod::{xattr_key,xattr_batch};
 use bpaf	::{*, long as l, short as s, positional as pos}; // short names to allow starting builders
 use super::bpaf_ext::*;
 
-#[derive(Debug,Clone)] pub struct Opt {pub undo:bool, pub group:bool, pub skip_c:bool, pub api:Option<String>, pub paths:Vec<PathBuf>,}
+#[derive(Debug,Clone)] pub struct Opt {pub undo:usize, pub group:bool, pub skip_c:bool, pub api:Option<String>, pub paths:Vec<PathBuf>,}
 
 use owo_colors::OwoColorize;
 pub fn options() -> OptionParser<Opt> {
@@ -14,7 +14,9 @@ pub fn options() -> OptionParser<Opt> {
     d.emphasis("• ");d.text("TBD parent dir to restore any children still in 🗑 that were removed from that dir\n ");
     d.emphasis("• ");d.text("TBD a single file to restore if any found in 🗑 (latest removed is restored if multiple)\n ");
     d.literal("r");d.text("|");d.literal("restore");d.text(" (alias)");
-    d}).      	  s('r').l("restore").switch();
+    d.lit("uu");d.text(" to force valid undo when trashing: return error if can't set extended attributes (will also restore the last item)");
+    d}).	  s('r').l("restore").switch()
+    .many().map(|xs| xs.len()).guard(|&x| x <= 2, "Max for undo flag is 2");
   // let group	= s('g').l("group"   ).h(&*format!("Move all items to a ‘{}_15꞉01꞉17_123’-styled subdir (alias: b̲atch)",xattr_batch))
   let group   	= s('g').l("group"   ).h({let mut d = Doc::default();d.text("Move all items to a ‘");d.text(xattr_batch);d.text("_15꞉01꞉17_123’-styled subdir \n ");
     d.literal("b");d.text("|");d.literal("batch");d.text(" (alias)");
