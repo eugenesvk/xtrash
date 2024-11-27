@@ -131,5 +131,11 @@ pub fn trash_all<P:AsRef<Path>>(cc_paths:&[P], group:bool) -> result::Result<(),
   //   // let trashed_file = None;
   //   warn!("deleting path from cb_clipboard_trash {:?}",path);
   }
-  Ok(())
+
+  // Return all skipped paths by category for future logging
+  skipped.insert("name"  	.to_string(),skipped_name );
+  skipped.insert("parent"	.to_string(),skipped_par  );
+  skipped.insert("trash" 	.to_string(),skipped_trash);
+  skipped.insert("dupe"  	.to_string(),skipped_dupe );
+  Ok(skipped)
 }
