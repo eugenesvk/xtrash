@@ -16,3 +16,20 @@ pub trait BpafAliasPos { // ... for positional arguments
 impl<T>   BpafAliasPos for ParsePositional<T> {
   fn h  <M>(self, help :M           ) -> Self             where M:Into<Doc>         {self.help    (help )}
 }
+
+use bpaf::doc::Style;
+use bpaf::Doc;
+pub trait BpafDocAlias { // add wrapper trait to allow using shorter .em (instead of .emphasis) Doc options to continue builders
+  fn b  (&mut self, text:&str) {}
+  fn em (&mut self, text:&str) {}
+  fn lit(&mut self, text:&str) {}
+  fn x  (&mut self, text:&str) {}
+  fn inv(&mut self, text:&str) {}
+}
+impl      BpafDocAlias for Doc {
+  fn b  (&mut self, text:&str) {self.emphasis(text);}
+  fn em (&mut self, text:&str) {self.emphasis(text);}
+  fn lit(&mut self, text:&str) {self.literal (text);}
+  fn x  (&mut self, text:&str) {self.invalid (text);}
+  fn inv(&mut self, text:&str) {self.invalid (text);}
+}
