@@ -32,12 +32,23 @@ issues by creating a group/batch directory to trash items to:
 
 As far as I understand, there is no good way to trash your files on macOS:
 
-  1. Ask `Finder` via AppleScript: slow, beeps, interrupts user asking for automation permissions, requires Finder running (which you might not have if you use an alternative file manager, so that's extra startup delay), but then is the only method that enables "put back"/undo feature via Finder
-  2. Using Obj-c FileManager APIs: none of the Finder downsides, __but__ has an OS bug where "put back"/undo is broken for many years. This could be solved by manually editing `.DS_Store`, but I'm not aware of any tools that do that. Also, Finder is slow to flush changes to disk, so undo operations might skip the latest trashes that Finder has completed, but not recorded yet
+|Feature               	| Finder via AS  	| OS API¹  	| Direct   	| Comment                                        	|
+|:-                    	|:--------------:	|:--------:	|:--------:	|                                                	|
+| Speed                	| Slow           	| Fast     	|  Fast    	|                                                	|
+| Sound                	| Beeps          	|          	|          	|                                                	|
+| Requires Finder      	| ✗ yes          	| ✓ no     	| ✓ no     	| Extra startup delay if no Finder               	|
+| Automation permission	| ✗ yes          	| ✓ no     	| ✓ no     	| asks for automation permissions on first run   	|
+| Finds the right 🗑    	| ✓ yes          	| ✗ no     	| ✗ custom 	| "Root"-protected files are deleted to User's 🗑⁴ 	|
+| Creates missing 🗑    	| ✓ yes          	| ✓ yes    	| ✗ custom 	| Might be tricky with setting proper permissions	|
+| Undo                 	| "Put back"     	| ✗ custom²	| ✗ custom 	| "Put back" is a accessible via Finder          	|
+| Undo data            	| `.DS_Store`³ @ 🗑	| custom   	| custom   	|                                                	|
 
-So this tries a more direct approach
+¹ [FileManager](https://developer.apple.com/documentation/foundation/filemanager/)
+² macOS bug existing for many years, though some reports that it works in the latest Sequoia version?
+³ proprietary Apple format that is refreshed by Finder with a 2 second (?) delay on trash, so undo of the most recent files programmatically might fail
+⁴ with elevated/sudo permissions files are deleted to root user's trash (`/private/var/root/.Trash` or `/Volumes/X/.Trashes/0`) instead of the logged in user's trash (`~/.Trash`)
 
-  3. Trash files by directly moving them to the trash folder and setting their extended attributes to the path they were deleted from.
+This tool tries the "Direct" approach with a custom undo functionality implemented by saving the original paths in extended attributes instead of the `.DS_Store` file database. Though the alternative of using `.DS_Store` or a custom open database are also an option.
 
 ## Credits
 
