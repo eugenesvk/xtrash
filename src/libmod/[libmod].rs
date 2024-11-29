@@ -1,4 +1,10 @@
 pub fn ret42() -> i32 { 42 }
+
+use users::{get_current_uid,uid_t};
+use lazy_static::lazy_static;
+lazy_static! {pub static ref UID : uid_t  = get_current_uid();}
+lazy_static! {pub static ref UIDS: String = UID.to_string  ();}
+
 use sudo::RunningAs;
 /// Get User ID of the logged in user (=user owning console in this case) when running as root, otherwise returns proc UID
 pub fn get_logged_uid() -> Result<uid_t> {
