@@ -7,6 +7,25 @@ pub fn get_logged_uid() -> Result<uid_t> {
     return Ok(sudo_uid.parse::<uid_t>()?)
   } else {Err("SUDO_UID missing even though the process is not running as User".into())}
 }
+
+/// TODO: when objc supports SystemConfiguration, port this Swift code to replace the env var check above
+pub fn _get_logged_uid() -> Option<uid_t> {
+  // alternative loggedInUser=$(stat -f %Su /dev/console), check edge cases scriptingosx.com/2020/02/getting-the-current-user-in-macos-update
+  let swift_code = r#"
+  import SystemConfiguration
+  func getConsoleUser() -> String? {
+    let store = SCDynamicStoreCreate(nil, "xtrash.consoleUserID" as CFString, nil, nil)
+    var uid: uid_t = 0 // → UnsafeMutablePointer<uid_t>
+    var gid: gid_t = 0 // → UnsafeMutablePointer<gid_t>
+    let ret = SCDynamicStoreCopyConsoleUser(store,&uid,&gid) as String?
+    print("uid",uid as Any) //
+    print("gid",gid as Any) //
+    return ret
+  }
+  "#;
+  None
+}
+
 /// Set process ID to that of the logged in user (to not trash to root trash, but user's trash, but then you might have no permissions)
 pub fn _unsudo() {
   if let   Ok(regu_uid) = get_logged_uid() {//trace!("setting regular {}",&regu_uid);
