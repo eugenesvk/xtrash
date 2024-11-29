@@ -1,4 +1,6 @@
-pub fn ret42() -> i32 { 42 }
+#![cfg_attr(not(debug_assertions),allow(non_snake_case,non_upper_case_globals,non_camel_case_types))]
+#![cfg_attr(    debug_assertions ,allow(non_snake_case,non_upper_case_globals,non_camel_case_types,unused_imports,unused_mut,unused_variables,dead_code,unused_assignments,unused_macros))]
+
 use std::{env, result, error::Error,};
 
 type Result<T> = result::Result<T, Box<dyn Error>>;
