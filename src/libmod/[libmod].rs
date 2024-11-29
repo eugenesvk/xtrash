@@ -1,4 +1,7 @@
 pub fn ret42() -> i32 { 42 }
+use std::{env, result, error::Error,};
+
+type Result<T> = result::Result<T, Box<dyn Error>>;
 
 use users::{get_current_uid,uid_t};
 use lazy_static::lazy_static;
