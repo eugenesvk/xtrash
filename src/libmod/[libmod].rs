@@ -3,6 +3,8 @@
 
 use std::{env, result, error::Error,};
 
+#[cfg(test)] mod test;
+
 type Result<T> = result::Result<T, Box<dyn Error>>;
 
 use users::{get_current_uid,uid_t};
