@@ -50,23 +50,20 @@ use std::borrow::Cow;
 use percent_encoding::percent_encode_byte as b2pc;
 pub fn from_utf8_lossy_pc(v:&[u8]) -> Cow<'_, str> { // std's from_utf8_lossy, but instead of invalid replacement char %-encode the byte
   let mut iter = v.utf8_chunks();
-
   let (first_valid,first_invalid) = if let Some(chunk) = iter.next() {
     let valid   = chunk.valid();
     let invalid = chunk.invalid();
-    if chunk.invalid().is_empty() {debug_assert_eq!(valid.len(), v.len()); // invalid=empty → last chunk
+    if  invalid.is_empty() {debug_assert_eq!(valid.len(), v.len()); // invalid=empty → last chunk
       return     Cow::Borrowed(valid);}
     (valid,invalid)
   } else {return Cow::Borrowed(""   );};
 
-  let mut res = String::with_capacity(v.len());
-  res.push_str(first_valid);
-  first_invalid.iter().for_each(|b| {res.push_str(b2pc(*b));});
-
-  for chunk in iter                 {res.push_str(chunk.valid());
+  let mut res = String::with_capacity(v.len()); res.push_str(first_valid);
+  first_invalid.iter().for_each(|b|            {res.push_str(b2pc(*b));});
+  for chunk in iter                            {res.push_str(chunk.valid());
     let invalid = chunk.invalid();
     if !invalid.is_empty() {
-      invalid  .iter().for_each(|b| {res.push_str(b2pc(*b));});}
+      invalid  .iter().for_each(|b|            {res.push_str(b2pc(*b));});}
   }
   Cow::Owned(res)
 }
