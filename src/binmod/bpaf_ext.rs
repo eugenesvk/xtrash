@@ -20,11 +20,11 @@ impl<T>   BpafAliasPos for ParsePositional<T> {
 use bpaf::doc::Style;
 use bpaf::Doc;
 pub trait BpafDocAlias { // add wrapper trait to allow using shorter .em (instead of .emphasis) Doc options to continue builders
-  fn b  (&mut self, text:&str) {}
-  fn em (&mut self, text:&str) {}
-  fn lit(&mut self, text:&str) {}
-  fn x  (&mut self, text:&str) {}
-  fn inv(&mut self, text:&str) {}
+  fn b  (&mut self, text:&str);
+  fn em (&mut self, text:&str);
+  fn lit(&mut self, text:&str);
+  fn x  (&mut self, text:&str);
+  fn inv(&mut self, text:&str);
 }
 impl      BpafDocAlias for Doc {
   fn b  (&mut self, text:&str) {self.emphasis(text);}
